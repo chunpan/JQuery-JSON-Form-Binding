@@ -1,36 +1,48 @@
-$.fn.jsonToForm = function (data, callbacks) {
+(function( factory ) {
+    if ( typeof define === "function" && define.amd ) {
+        define( ["jquery"], factory );
+    } else if (typeof module === "object" && module.exports) {
+        module.exports = factory( require( "jquery" ) );
+    } else {
+        factory( jQuery );
+    }
+}(function( $ ) {
+    $.fn.jsonToForm = function (data, callbacks) {
 
-    var formInstance = this;
+        var formInstance = this;
 
-    var options = {
+        var options = {
 
-        data: data || null,
-        callbacks: callbacks
+            data: data || null,
+            callbacks: callbacks
+
+        };
+
+        if (options.data != null) {
+            $.each(options.data, function (k, v) {
+
+                if (options.callbacks != null && options.callbacks.hasOwnProperty(k)) {
+
+                    options.callbacks[k](v);
+
+                } else {
+                    // set values to multi selectable form elements like select/checkbox if value is array
+                    if (Array.isArray(v)) {
+                        var el = $('[name="' + k + '[]"]', formInstance);
+                        if (el.length) {
+                            el.val(v);
+                        } else {
+                            console.error('Invalid values passed');
+                        }
+                    } else {
+                        $('[name="' + k + '"]', formInstance).val(v);
+                    }
+                }
+
+            });
+        }
 
     };
 
-    if (options.data != null) {
-        $.each(options.data, function (k, v) {
-
-            if (options.callbacks != null && options.callbacks.hasOwnProperty(k)) {
-
-                options.callbacks[k](v);
-
-            } else {
-                // set values to multi selectable form elements like select/checkbox if value is array
-                if (Array.isArray(v)) {
-                    var el = $('[name="' + k + '[]"]', formInstance);
-                    if (el.length) {
-                        el.val(v);
-                    } else {
-                        console.error('Invalid values passed');
-                    }
-                } else {
-                    $('[name="' + k + '"]', formInstance).val(v);
-                }
-            }
-
-        });
-    }
-
-}
+    return $;
+}));
